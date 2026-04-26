@@ -5,12 +5,19 @@ import {
   BadgeCheck,
   Bot,
   CreditCard,
+  Download,
   FileText,
   HeartPulse,
+  Info,
+  Lock,
   Loader2,
   Pill,
+  PhoneCall,
   QrCode,
+  ShieldCheck,
   Stethoscope,
+  User,
+  Users,
 } from "lucide-react";
 import {
   CartesianGrid,
@@ -469,6 +476,7 @@ function EncounterReel({ encounters }) {
 
 function IDCard({ data }) {
   const [qr, setQr] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     getQr().then(setQr).catch(() => setQr(null));
@@ -476,6 +484,20 @@ function IDCard({ data }) {
 
   const meds = data.snapshot.currentMedications.slice(0, 4);
   const allergies = data.snapshot.allergies;
+  const conditions = data.snapshot.activeConditions.slice(0, 4);
+  const emergencyContact = "S. Mitchell (Proxy)";
+  const emergencyPhone = "(512) 555-0187";
+
+  async function downloadCard() {
+    if (!qr?.qr) return;
+    setDownloading(true);
+    try {
+      await downloadIdCardImage({ data, qr, meds, allergies, conditions, emergencyContact, emergencyPhone });
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <section className="page">
       <div className="section-heading">
@@ -483,32 +505,353 @@ function IDCard({ data }) {
           <div className="eyebrow">Patient-carried access</div>
           <h1>Medical ID Card</h1>
         </div>
+        <button className="primary-button" disabled={!qr || downloading} onClick={downloadCard}>
+          {downloading ? <Loader2 className="spin" size={16} /> : <Download size={16} />}
+          {downloading ? "Preparing..." : "Download PNG"}
+        </button>
       </div>
-      <div className="card-stage">
-        <article className="medical-card">
-          <div className="card-topline">CareRelay Medical ID</div>
-          <h2>{data.patient.name}</h2>
-          <p>{titleCase(data.patient.gender)} · {data.patient.age} · MRN {data.patient.mrn}</p>
-          <div className="card-section">
-            <strong>Critical allergies</strong>
-            <span>{allergies.map((item) => compactCondition(item.name)).join(", ") || "None documented"}</span>
+
+      <div className="id-card-stack" id="care-relay-id-card">
+        <div className="side-label">Front side</div>
+        <article className="id-card-surface">
+          <div className="id-card-header">
+            <div className="id-logo">
+              <span className="id-heart">+</span>
+              <strong>CareRelay</strong>
+            </div>
+            <div className="id-heading">
+              <strong>Patient ID Card</strong>
+              <span>Emergency Medical Reference</span>
+            </div>
           </div>
-          <div className="card-section">
-            <strong>Key medications</strong>
-            <span>{meds.map((item) => shortMedName(item.name)).join(", ")}</span>
+
+          <div className="id-card-body front">
+            <section className="identity-block">
+              <div className="id-section-title">
+                <User size={21} />
+                <span>Identity</span>
+              </div>
+              <label>Name</label>
+              <h2>{data.patient.name}</h2>
+              <label>Sex / Age</label>
+              <strong>{titleCase(data.patient.gender)} / {data.patient.age}</strong>
+              <label>MRN</label>
+              <strong>{data.patient.mrn}</strong>
+              <label>Blood Group</label>
+              <strong>{display(data.patient.bloodType, "Unknown")}</strong>
+            </section>
+
+            <section className="medical-lines">
+              <CardLine
+                tone="danger"
+                icon={<AlertTriangle size={26} />}
+                label="Allergies"
+                value={allergies.map((item) => compactCondition(item.name)).join(", ") || "None documented"}
+              />
+              <CardLine
+                icon={<Pill size={26} />}
+                label="Medications"
+                value={meds.map((item) => shortMedName(item.name)).join(", ")}
+              />
+              <CardLine
+                icon={<HeartPulse size={26} />}
+                label="Diagnoses"
+                value={conditions.map((item) => compactCondition(item.name)).join(", ")}
+              />
+              <div className="emergency-contact">
+                <Users size={27} />
+                <div>
+                  <span>Emergency Contact</span>
+                  <strong>{emergencyContact}</strong>
+                </div>
+                <div className="phone">
+                  <PhoneCall size={20} />
+                  {emergencyPhone}
+                </div>
+              </div>
+            </section>
           </div>
-          <div className="card-footer">Emergency contact: Demo placeholder</div>
+
+          <div className="id-card-footer">
+            <ShieldCheck size={19} />
+            <span>For emergency use by healthcare professionals</span>
+            <strong>CR-{data.patient.mrn}</strong>
+          </div>
         </article>
 
-        <article className="medical-card back">
-          <div className="card-topline">Scan for clinician snapshot</div>
-          <div className="qr-box">
-            {qr ? <img src={qr.qr} alt="CareRelay QR code" /> : <QrCode size={96} />}
+        <div className="side-label">Back side</div>
+        <article className="id-card-surface">
+          <div className="id-card-header centered">
+            <span className="rule" />
+            <div className="id-logo">
+              <span className="id-heart">+</span>
+              <strong>CareRelay</strong>
+            </div>
+            <span className="rule" />
           </div>
-          <p>{qr?.url || "http://localhost:5173/patient/default"}</p>
-          <div className="card-footer">Synthetic demo only. Not for clinical use.</div>
+
+          <div className="id-card-body back">
+            <div className="qr-frame">
+              {qr ? <img src={qr.qr} alt="CareRelay QR code" /> : <QrCode size={132} />}
+            </div>
+            <div className="scan-copy">
+              <Lock size={26} />
+              <strong>Scan for Secure Access</strong>
+              <p>Full clinician snapshot, medication warnings, visit brief, and emergency resources.</p>
+            </div>
+            <div className="card-guidance">
+              <Guidance icon={<Info size={24} />} text="This card is for emergency medical reference only, not a substitute for official medical records." />
+              <Guidance icon={<PhoneCall size={24} />} text="In life-threatening emergencies, call 911 immediately." tone="danger" />
+              <Guidance icon={<ShieldCheck size={24} />} text="Report lost or stolen card to the CareRelay care team." />
+            </div>
+          </div>
+
+          <div className="id-card-footer light">
+            <ShieldCheck size={19} />
+            <span>Property of CareRelay. Not transferable.</span>
+            <strong>{qr?.url || "http://localhost:5173/patient/default"}</strong>
+          </div>
         </article>
       </div>
     </section>
   );
+}
+
+function CardLine({ icon, label, value, tone = "default" }) {
+  return (
+    <div className={`card-line ${tone}`}>
+      {icon}
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function Guidance({ icon, text, tone = "default" }) {
+  return (
+    <div className={`guidance ${tone}`}>
+      {icon}
+      <p>{text}</p>
+    </div>
+  );
+}
+
+async function downloadIdCardImage({ data, qr, meds, allergies, conditions, emergencyContact, emergencyPhone }) {
+  const canvas = document.createElement("canvas");
+  const scale = 2;
+  const width = 1420;
+  const height = 1160;
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+
+  const qrImage = await loadImage(qr.qr);
+  ctx.fillStyle = "#f7faf9";
+  ctx.fillRect(0, 0, width, height);
+  drawCardSide(ctx, 80, 60, "front", { data, meds, allergies, conditions, emergencyContact, emergencyPhone, qrImage, qr });
+  drawCardSide(ctx, 80, 625, "back", { data, meds, allergies, conditions, emergencyContact, emergencyPhone, qrImage, qr });
+
+  const link = document.createElement("a");
+  link.download = `CareRelay-ID-${data.patient.mrn}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function drawCardSide(ctx, x, y, side, context) {
+  const cardWidth = 1260;
+  const cardHeight = 470;
+  roundRect(ctx, x, y, cardWidth, cardHeight, 22, "#ffffff", "#d9e5e2");
+  ctx.fillStyle = "#0b3037";
+  roundTop(ctx, x, y, cardWidth, 112, 22);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+
+  if (side === "front") {
+    ctx.font = "700 42px Arial";
+    ctx.fillText("✚ CareRelay", x + 70, y + 70);
+    drawFrontCard(ctx, x, y, context);
+  } else {
+    ctx.strokeStyle = "#7be7d9";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x + 60, y + 58);
+    ctx.lineTo(x + 470, y + 58);
+    ctx.moveTo(x + 790, y + 58);
+    ctx.lineTo(x + 1200, y + 58);
+    ctx.stroke();
+    ctx.font = "700 42px Arial";
+    ctx.fillText("✚ CareRelay", x + 520, y + 72);
+    drawBackCard(ctx, x, y, context);
+  }
+}
+
+function drawFrontCard(ctx, x, y, { data, meds, allergies, conditions, emergencyContact, emergencyPhone }) {
+  ctx.fillStyle = "#8ff5e4";
+  ctx.font = "700 25px Arial";
+  ctx.fillText("PATIENT ID CARD", x + 960, y + 48);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "600 21px Arial";
+  ctx.fillText("Emergency Medical Reference", x + 850, y + 82);
+
+  ctx.strokeStyle = "#d3dedb";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 400, y + 142);
+  ctx.lineTo(x + 400, y + 360);
+  ctx.stroke();
+
+  ctx.fillStyle = "#145d58";
+  ctx.font = "700 22px Arial";
+  ctx.fillText("IDENTITY", x + 105, y + 158);
+  ctx.fillStyle = "#0f172b";
+  ctx.font = "600 17px Arial";
+  ctx.fillText("Name", x + 48, y + 202);
+  ctx.font = "700 29px Arial";
+  fitCanvasText(ctx, data.patient.name, x + 48, y + 238, 300);
+  ctx.font = "600 17px Arial";
+  ctx.fillText("Sex / Age", x + 48, y + 278);
+  ctx.font = "700 24px Arial";
+  ctx.fillText(`${titleCase(data.patient.gender)} / ${data.patient.age}`, x + 48, y + 310);
+  ctx.font = "600 17px Arial";
+  ctx.fillText("MRN", x + 48, y + 348);
+  ctx.font = "700 22px Arial";
+  ctx.fillText(data.patient.mrn, x + 48, y + 378);
+
+  const allergyText = allergies.map((item) => compactCondition(item.name)).join(", ") || "None documented";
+  const medicationText = meds.map((item) => shortMedName(item.name)).join(", ");
+  const diagnosisText = conditions.map((item) => compactCondition(item.name)).join(", ");
+  drawCanvasLine(ctx, x + 455, y + 165, "⚠", "ALLERGIES", allergyText, "#b42318", 1);
+  drawCanvasLine(ctx, x + 455, y + 240, "●", "MEDICATIONS", medicationText, "#145d58", 2);
+  drawCanvasLine(ctx, x + 455, y + 322, "♥", "DIAGNOSES", diagnosisText, "#145d58", 2);
+
+  ctx.strokeStyle = "#c9d5d2";
+  ctx.strokeRect(x + 445, y + 365, 760, 60);
+  ctx.fillStyle = "#145d58";
+  ctx.font = "700 20px Arial";
+  ctx.fillText("EMERGENCY CONTACT", x + 520, y + 389);
+  ctx.fillStyle = "#0f172b";
+  ctx.font = "700 23px Arial";
+  ctx.fillText(emergencyContact, x + 520, y + 415);
+  ctx.font = "700 22px Arial";
+  ctx.fillText(emergencyPhone, x + 980, y + 405);
+
+  ctx.fillStyle = "#176a64";
+  ctx.fillRect(x, y + 422, 1260, 48);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "700 20px Arial";
+  ctx.fillText("For emergency use by healthcare professionals", x + 74, y + 453);
+  ctx.fillText(`CR-${data.patient.mrn}`, x + 1070, y + 453);
+}
+
+function drawBackCard(ctx, x, y, { qrImage, qr }) {
+  ctx.drawImage(qrImage, x + 65, y + 160, 235, 235);
+  ctx.fillStyle = "#145d58";
+  ctx.font = "700 23px Arial";
+  ctx.fillText("SCAN FOR SECURE ACCESS", x + 390, y + 235);
+  ctx.fillStyle = "#0f172b";
+  ctx.font = "500 22px Arial";
+  wrapCanvasText(ctx, "Full medical profile, medication warnings, visit brief, and emergency resources.", x + 390, y + 285, 330, 30, 4);
+
+  ctx.strokeStyle = "#d3dedb";
+  ctx.beginPath();
+  ctx.moveTo(x + 700, y + 142);
+  ctx.lineTo(x + 700, y + 370);
+  ctx.stroke();
+  drawGuidanceText(ctx, x + 750, y + 170, "ℹ", "This card is for emergency medical reference only, not a substitute for official medical records.");
+  drawGuidanceText(ctx, x + 750, y + 250, "☎", "In life-threatening emergencies, call 911 immediately.", "#b42318");
+  drawGuidanceText(ctx, x + 750, y + 330, "✓", "Report lost or stolen card to the CareRelay care team.");
+
+  ctx.strokeStyle = "#d3dedb";
+  ctx.beginPath();
+  ctx.moveTo(x + 45, y + 382);
+  ctx.lineTo(x + 1215, y + 382);
+  ctx.stroke();
+  ctx.fillStyle = "#0f172b";
+  ctx.font = "700 20px Arial";
+  ctx.fillText("Property of CareRelay. Not transferable.", x + 105, y + 414);
+  ctx.fillText(qr.url, x + 675, y + 414);
+}
+
+function drawCanvasLine(ctx, x, y, icon, label, value, color, maxLines = 2) {
+  ctx.fillStyle = color;
+  ctx.font = "700 24px Arial";
+  ctx.fillText(icon, x, y);
+  ctx.font = "700 21px Arial";
+  ctx.fillText(label, x + 80, y);
+  ctx.fillStyle = "#0f172b";
+  ctx.font = "600 21px Arial";
+  wrapCanvasText(ctx, value || "None documented", x + 280, y, 470, 26, maxLines);
+}
+
+function drawGuidanceText(ctx, x, y, icon, text, color = "#145d58") {
+  ctx.fillStyle = color;
+  ctx.font = "700 25px Arial";
+  ctx.fillText(icon, x, y);
+  ctx.fillStyle = "#0f172b";
+  ctx.font = "600 21px Arial";
+  wrapCanvasText(ctx, text, x + 72, y, 390, 28, 3);
+}
+
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 999) {
+  const words = String(text).split(" ");
+  let line = "";
+  let lines = 1;
+  for (const word of words) {
+    const testLine = `${line}${word} `;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      if (lines >= maxLines) {
+        fitCanvasText(ctx, `${line.trim()}...`, x, y, maxWidth);
+        return;
+      }
+      ctx.fillText(line.trim(), x, y);
+      line = `${word} `;
+      y += lineHeight;
+      lines += 1;
+    } else {
+      line = testLine;
+    }
+  }
+  fitCanvasText(ctx, line.trim(), x, y, maxWidth);
+}
+
+function fitCanvasText(ctx, text, x, y, maxWidth) {
+  let output = String(text || "");
+  while (output.length > 4 && ctx.measureText(output).width > maxWidth) {
+    output = `${output.slice(0, -4)}...`;
+  }
+  ctx.fillText(output, x, y);
+}
+
+function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, radius);
+  ctx.arcTo(x + width, y + height, x, y + height, radius);
+  ctx.arcTo(x, y + height, x, y, radius);
+  ctx.arcTo(x, y, x + width, y, radius);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.stroke();
+}
+
+function roundTop(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + width, y, x + width, y + height, radius);
+  ctx.lineTo(x + width, y + height);
+  ctx.lineTo(x, y + height);
+  ctx.arcTo(x, y, x + radius, y, radius);
+  ctx.closePath();
 }

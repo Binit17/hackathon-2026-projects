@@ -452,70 +452,295 @@ h2 {
   border-color: rgba(47, 79, 79, 0.12);
 }
 
-.card-stage {
+.id-card-stack {
   display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(2, minmax(0, 420px));
+  gap: 14px;
+  max-width: 1120px;
 }
 
-.medical-card {
-  background: linear-gradient(145deg, #0b4f4a, #0f172b);
-  color: white;
-  min-height: 260px;
-  padding: 24px;
-}
-
-.medical-card.back {
-  align-items: center;
-  display: grid;
-  justify-items: center;
-  text-align: center;
-}
-
-.card-topline {
-  color: #99f6e4;
-  font-size: 12px;
+.side-label {
+  color: #0f172b;
+  font-size: 22px;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
+  text-align: center;
   text-transform: uppercase;
 }
 
-.medical-card h2 {
+.id-card-surface {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 43, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 22px 50px rgba(15, 23, 43, 0.14);
+  overflow: hidden;
+}
+
+.id-card-header {
+  align-items: center;
+  background: #0b3037;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  min-height: 104px;
+  padding: 22px 40px;
+}
+
+.id-card-header.centered {
+  justify-content: center;
+  gap: 28px;
+}
+
+.rule {
+  background: #7be7d9;
+  height: 2px;
+  width: min(28vw, 360px);
+}
+
+.id-logo {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+}
+
+.id-logo strong {
+  font-size: 38px;
+  letter-spacing: 0;
+}
+
+.id-heart {
+  align-items: center;
+  background: #ffffff;
+  border-radius: 50%;
+  color: #0b4f4a;
+  display: inline-flex;
   font-size: 28px;
-  margin: 28px 0 6px;
+  font-weight: 900;
+  height: 54px;
+  justify-content: center;
+  width: 54px;
 }
 
-.card-section {
+.id-heading {
   display: grid;
-  gap: 4px;
-  margin-top: 18px;
+  text-align: right;
 }
 
-.card-section span,
-.card-footer {
-  color: rgba(255, 255, 255, 0.76);
+.id-heading strong {
+  color: #8ff5e4;
+  font-size: 22px;
+  text-transform: uppercase;
 }
 
-.card-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  margin-top: 22px;
-  padding-top: 14px;
+.id-heading span {
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.qr-box {
-  background: white;
+.id-card-body {
+  padding: 30px 40px;
+}
+
+.id-card-body.front {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 0.85fr 1.7fr;
+}
+
+.identity-block {
+  border-right: 2px solid #d6e0dd;
+  padding-right: 28px;
+}
+
+.id-section-title {
+  align-items: center;
+  color: #145d58;
+  display: flex;
+  font-size: 17px;
+  font-weight: 900;
+  gap: 10px;
+  letter-spacing: 0.06em;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+
+.identity-block label {
+  color: #334155;
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin-top: 11px;
+}
+
+.identity-block h2 {
+  color: #0f172b;
+  font-size: 30px;
+  line-height: 1.05;
+  margin: 3px 0 6px;
+}
+
+.identity-block strong {
+  color: #0f172b;
+  display: block;
+  font-size: 20px;
+}
+
+.medical-lines {
+  display: grid;
+  gap: 0;
+}
+
+.card-line {
+  align-items: center;
+  border-bottom: 1px solid #cfd9d6;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 42px 170px 1fr;
+  min-height: 74px;
+}
+
+.card-line svg {
+  color: #145d58;
+}
+
+.card-line.danger svg,
+.card-line.danger span {
+  color: #b42318;
+}
+
+.card-line span,
+.emergency-contact span {
+  color: #145d58;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.card-line strong {
+  color: #0f172b;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.emergency-contact {
+  align-items: center;
+  border: 1px solid #b7c8c3;
   border-radius: 12px;
   display: grid;
-  height: 150px;
-  margin: 18px 0;
-  place-items: center;
-  width: 150px;
+  gap: 18px;
+  grid-template-columns: 48px 1fr auto;
+  margin-top: 18px;
+  padding: 14px 18px;
 }
 
-.qr-box img {
-  display: block;
-  height: 128px;
-  width: 128px;
+.emergency-contact svg,
+.phone svg {
+  color: #145d58;
+}
+
+.emergency-contact strong,
+.phone {
+  color: #0f172b;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.phone {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.id-card-footer {
+  align-items: center;
+  background: #176a64;
+  color: white;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: auto 1fr auto;
+  padding: 16px 40px;
+}
+
+.id-card-footer.light {
+  background: #ffffff;
+  border-top: 1px solid #d3dedb;
+  color: #0f172b;
+}
+
+.id-card-footer strong {
+  font-weight: 900;
+}
+
+.id-card-body.back {
+  align-items: center;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 260px 290px 1fr;
+}
+
+.qr-frame {
+  background: white;
+  border: 1px solid #d3dedb;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 10px #f8fafc;
+  display: grid;
+  height: 236px;
+  place-items: center;
+  width: 236px;
+}
+
+.qr-frame img {
+  height: 188px;
+  width: 188px;
+}
+
+.scan-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.scan-copy svg {
+  color: #145d58;
+}
+
+.scan-copy strong {
+  color: #145d58;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.scan-copy p {
+  color: #0f172b;
+  font-size: 18px;
+}
+
+.card-guidance {
+  border-left: 2px solid #d3dedb;
+  display: grid;
+  gap: 18px;
+  padding-left: 32px;
+}
+
+.guidance {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 34px 1fr;
+}
+
+.guidance svg {
+  color: #145d58;
+}
+
+.guidance.danger svg {
+  color: #b42318;
+}
+
+.guidance p {
+  color: #0f172b;
+  font-size: 17px;
+  font-weight: 650;
+  margin-bottom: 0;
 }
 
 .center-screen {
@@ -577,8 +802,27 @@ h2 {
   }
 
   .patient-hero,
-  .card-stage {
+  .id-card-body.front,
+  .id-card-body.back {
     grid-template-columns: 1fr;
+  }
+
+  .identity-block,
+  .card-guidance {
+    border: 0;
+    padding: 0;
+  }
+
+  .id-card-header,
+  .id-card-footer,
+  .emergency-contact,
+  .card-line {
+    grid-template-columns: 1fr;
+  }
+
+  .id-card-header,
+  .id-heading {
+    text-align: left;
   }
 
   .metric-grid,
